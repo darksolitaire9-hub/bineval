@@ -41,10 +41,7 @@ pub fn needs_metadata(p: &Primitive) -> bool {
     if p.metadata_path.is_some() {
         return false;
     }
-    match p.core_tag.as_str() {
-        "PRODUCT" | "TRIAL" | "EXTRACTED" | "UNTAGGED" => true,
-        _ => false,
-    }
+    matches!(p.core_tag.as_str(), "PRODUCT" | "TRIAL" | "EXTRACTED" | "UNTAGGED")
 }
 
 /// metadata_is_consistent(p: &Primitive) -> bool
