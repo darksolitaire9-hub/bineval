@@ -1,8 +1,7 @@
-use crate::ports::ConfigPort;
+use crate::core::errors::ConfigError;
 use crate::core::suite::EvalSuite;
 use crate::core::template::Template;
-use crate::core::errors::ConfigError;
-
+use crate::ports::ConfigPort;
 
 pub struct JsonConfigAdapter;
 

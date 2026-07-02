@@ -14,9 +14,9 @@ fn test_validate_suites_success() {
 fn test_validate_unknown_component() {
     let mut cmd = Command::cargo_bin("bineval").expect("Failed to get binary");
     cmd.arg("validate").arg("unknown_thing");
-    cmd.assert()
-        .failure()
-        .stderr(predicates::str::contains("Unknown validation component: unknown_thing"));
+    cmd.assert().failure().stderr(predicates::str::contains(
+        "Unknown validation component: unknown_thing",
+    ));
 }
 
 #[test]

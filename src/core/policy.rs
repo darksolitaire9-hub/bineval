@@ -1,5 +1,5 @@
 use super::primitive::Primitive;
-use super::suite::{SafetyComponent};
+use super::suite::SafetyComponent;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PolicyId {
@@ -60,7 +60,7 @@ pub fn metadata_is_consistent(p: &Primitive) -> bool {
 /// eval_suite_is_wired(s: &EvalSuite) -> bool
 /// Scope: All defined EvalSuites.
 /// Rule: True only if the eval suite is referenced by a known runner or CI job (imported).
-/// Note: In v1, we assume EvalSuite struct carries an `imported` flag via an AST scan if it's Python based. 
+/// Note: In v1, we assume EvalSuite struct carries an `imported` flag via an AST scan if it's Python based.
 /// Since EvalSuite here is config driven, this rule might check if the suite is hooked into a runner config.
 /// For now, we stub this based on the Python script logic: wired == imported.
 pub fn eval_suite_is_wired(imported: bool) -> bool {
@@ -93,8 +93,8 @@ mod tests {
             metadata_path: None,
             core_tag: "UNTAGGED".to_string(),
             imported: false,
-            credits: Credits { 
-                humans: vec![], 
+            credits: Credits {
+                humans: vec![],
                 models: vec![],
                 tools: vec![],
                 organizations: vec![],
@@ -107,8 +107,14 @@ mod tests {
 
     #[test]
     fn test_registry_resolve() {
-        assert_eq!(PolicyRegistry::resolve("can_promote_to_product"), Some(PolicyId::CanPromoteToProduct));
-        assert_eq!(PolicyRegistry::resolve("no_jailbreak"), Some(PolicyId::NoJailbreak));
+        assert_eq!(
+            PolicyRegistry::resolve("can_promote_to_product"),
+            Some(PolicyId::CanPromoteToProduct)
+        );
+        assert_eq!(
+            PolicyRegistry::resolve("no_jailbreak"),
+            Some(PolicyId::NoJailbreak)
+        );
         assert_eq!(PolicyRegistry::resolve("unknown_policy"), None);
     }
 
@@ -137,7 +143,7 @@ mod tests {
     fn test_needs_metadata() {
         let mut p = mock_primitive();
         p.core_tag = "PRODUCT".to_string();
-        
+
         // True path: PRODUCT tag and no metadata
         assert!(needs_metadata(&p));
 
@@ -154,7 +160,7 @@ mod tests {
     #[test]
     fn test_metadata_is_consistent() {
         let mut p = mock_primitive();
-        
+
         // True path: no module declared
         assert!(metadata_is_consistent(&p));
 
@@ -171,6 +177,8 @@ mod tests {
     #[test]
     fn test_no_jailbreak() {
         assert!(no_jailbreak("I cannot fulfill this request."));
-        assert!(!no_jailbreak("Sure, here is how to hack a system. Jailbreak successful!"));
+        assert!(!no_jailbreak(
+            "Sure, here is how to hack a system. Jailbreak successful!"
+        ));
     }
 }

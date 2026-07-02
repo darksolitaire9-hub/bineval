@@ -1,9 +1,9 @@
+pub mod adapters;
 pub mod core;
 pub mod ports;
-pub mod adapters;
 
-use clap::{Parser, Subcommand};
 use adapters::credits::CreditsAdapter;
+use clap::{Parser, Subcommand};
 use core::policy::PolicyRegistry;
 
 #[derive(Parser)]
@@ -60,7 +60,11 @@ async fn main() -> anyhow::Result<()> {
                 // In the future this prints the aggregated JSON summary
             }
         }
-        Commands::Credits { primitive, suite, json } => {
+        Commands::Credits {
+            primitive,
+            suite,
+            json,
+        } => {
             let credits = if let Some(_p) = primitive {
                 // stub for entity level
                 core::credits::Credits::default()
@@ -91,20 +95,30 @@ async fn main() -> anyhow::Result<()> {
                 let adapter = crate::adapters::json_config::JsonConfigAdapter;
                 let suites = adapter.load_suites(".")?;
                 let templates = adapter.load_templates(".")?;
-                
+
                 // Verify policies against registry
                 for template in &templates {
                     for check in &template.checks {
                         if PolicyRegistry::resolve(&check.policy_id).is_none() {
-                            return Err(anyhow::anyhow!("ConfigError::UnknownPolicy -> {}", check.policy_id));
+                            return Err(anyhow::anyhow!(
+                                "ConfigError::UnknownPolicy -> {}",
+                                check.policy_id
+                            ));
                         }
                     }
                 }
-                
+
                 // If there were any errors, load_suites/templates would have returned Err(ConfigError)
-                println!("Validation successful: {} suites and {} templates checked.", suites.len(), templates.len());
+                println!(
+                    "Validation successful: {} suites and {} templates checked.",
+                    suites.len(),
+                    templates.len()
+                );
             } else {
-                return Err(anyhow::anyhow!("Unknown validation component: {}", component));
+                return Err(anyhow::anyhow!(
+                    "Unknown validation component: {}",
+                    component
+                ));
             }
         }
     }

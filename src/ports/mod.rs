@@ -1,7 +1,6 @@
-
+use crate::core::errors::{AstError, ConfigError};
 use crate::core::suite::EvalSuite;
 use crate::core::template::Template;
-use crate::core::errors::{ConfigError, AstError};
 
 pub trait RepoPort {
     fn read_file(&self, path: &str) -> anyhow::Result<String>;
@@ -10,11 +9,13 @@ pub trait RepoPort {
 
 pub trait AstPort {
     // Note: Rust >= 1.75 allows async fn in traits
-    fn parse_imports(&self, repo_path: &str) -> impl std::future::Future<Output = Result<Vec<String>, AstError>> + Send;
+    fn parse_imports(
+        &self,
+        repo_path: &str,
+    ) -> impl std::future::Future<Output = Result<Vec<String>, AstError>> + Send;
 }
 
 pub trait ConfigPort {
     fn load_templates(&self, repo_path: &str) -> Result<Vec<Template>, ConfigError>;
     fn load_suites(&self, repo_path: &str) -> Result<Vec<EvalSuite>, ConfigError>;
 }
-

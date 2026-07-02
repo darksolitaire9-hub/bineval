@@ -1,5 +1,5 @@
-use crate::ports::AstPort;
 use crate::core::errors::AstError;
+use crate::ports::AstPort;
 use tokio::process::Command;
 
 pub struct PythonAstAdapter;
@@ -7,7 +7,7 @@ pub struct PythonAstAdapter;
 impl AstPort for PythonAstAdapter {
     async fn parse_imports(&self, repo_path: &str) -> Result<Vec<String>, AstError> {
         let script_path = ".bineval_ast_extractor.py";
-        
+
         let output = Command::new("uv")
             .arg("run")
             .arg("python")
@@ -19,7 +19,10 @@ impl AstPort for PythonAstAdapter {
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-            return Err(AstError::HelperFailed(output.status.code().unwrap_or(-1), stderr));
+            return Err(AstError::HelperFailed(
+                output.status.code().unwrap_or(-1),
+                stderr,
+            ));
         }
 
         let stdout = String::from_utf8_lossy(&output.stdout);
