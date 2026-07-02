@@ -10,7 +10,24 @@ pub struct Credits {
     pub models: Vec<ModelCredit>,
     #[serde(default)]
     pub tools: Vec<ToolCredit>,
+    #[serde(default)]
+    pub upstream_influences: Vec<UpstreamInfluence>,
+    #[serde(default)]
+    pub original_contributions: Vec<OriginalContribution>,
     pub license: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UpstreamInfluence {
+    pub title: String,
+    pub arxiv: Option<String>,
+    pub purpose: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OriginalContribution {
+    pub feature: String,
+    pub purpose: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -29,13 +46,13 @@ pub struct OrgCredit {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ModelCredit {
     pub model_name: String,
-    pub provider: String,
+    pub provider: Option<String>,
     pub purpose: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ToolCredit {
     pub name: String,
-    pub version: Option<String>,
-    pub role: String,
+    pub url: Option<String>,
+    pub purpose: String,
 }
