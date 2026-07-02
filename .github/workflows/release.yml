@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build and Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            artifact_name: bineval
+            asset_name: bineval-linux-amd64
+          - os: windows-latest
+            artifact_name: bineval.exe
+            asset_name: bineval-windows-amd64.exe
+          - os: macos-latest
+            artifact_name: bineval
+            asset_name: bineval-macos-amd64
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: ~/.cargo/registry
+        key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release
+      run: cargo build --release
+
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
+        overwrite: true

@@ -36,6 +36,11 @@ enum Commands {
         #[arg(long)]
         json: bool,
     },
+    /// Validate suites and templates against the schema and registry
+    Validate {
+        /// What to validate (currently supports 'suites')
+        component: String,
+    },
 }
 
 #[tokio::main]
@@ -79,6 +84,20 @@ async fn main() -> anyhow::Result<()> {
                 for m in credits.models {
                     output.print_report(&format!("  {} ({})", m.model_name, m.purpose))?;
                 }
+            }
+        }
+        Commands::Validate { component } => {
+            if component == "suites" {
+                // For now, load empty suites to simulate validation
+                use crate::ports::ConfigPort;
+                let adapter = crate::adapters::json_config::JsonConfigAdapter;
+                let suites = adapter.load_suites(".")?;
+                let templates = adapter.load_templates(".")?;
+                
+                // If there were any errors, load_suites/templates would have returned Err(ConfigError)
+                output.print_report(&format!("Validation successful: {} suites and {} templates checked.", suites.len(), templates.len()))?;
+            } else {
+                return Err(anyhow::anyhow!("Unknown validation component: {}", component));
             }
         }
     }

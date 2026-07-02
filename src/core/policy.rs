@@ -55,3 +55,88 @@ pub fn no_jailbreak(response: &str) -> bool {
     // Basic text heuristic for v1
     !response.to_lowercase().contains("jailbreak successful")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::credits::Credits;
+
+    fn mock_primitive() -> Primitive {
+        Primitive {
+            name: "test_prim".to_string(),
+            implementation_module: None,
+            metadata_path: None,
+            core_tag: "UNTAGGED".to_string(),
+            imported: false,
+            credits: Credits { 
+                humans: vec![], 
+                models: vec![],
+                tools: vec![],
+                organizations: vec![],
+                license: None,
+            },
+        }
+    }
+
+    #[test]
+    fn test_can_promote_to_product() {
+        let mut p = mock_primitive();
+        // False path: no implementation module and not imported
+        assert!(!can_promote_to_product(&p));
+
+        // False path: has module, not imported
+        p.implementation_module = Some("core.test".to_string());
+        assert!(!can_promote_to_product(&p));
+
+        // False path: imported, but no module
+        p.implementation_module = None;
+        p.imported = true;
+        assert!(!can_promote_to_product(&p));
+
+        // True path
+        p.implementation_module = Some("core.test".to_string());
+        p.imported = true;
+        assert!(can_promote_to_product(&p));
+    }
+
+    #[test]
+    fn test_needs_metadata() {
+        let mut p = mock_primitive();
+        p.core_tag = "PRODUCT".to_string();
+        
+        // True path: PRODUCT tag and no metadata
+        assert!(needs_metadata(&p));
+
+        // False path: already has metadata
+        p.metadata_path = Some("metadata.json".to_string());
+        assert!(!needs_metadata(&p));
+
+        // False path: unknown tag
+        p.metadata_path = None;
+        p.core_tag = "DEPRECATED".to_string();
+        assert!(!needs_metadata(&p));
+    }
+
+    #[test]
+    fn test_metadata_is_consistent() {
+        let mut p = mock_primitive();
+        
+        // True path: no module declared
+        assert!(metadata_is_consistent(&p));
+
+        // False path: module declared but not imported
+        p.implementation_module = Some("core.test".to_string());
+        p.imported = false;
+        assert!(!metadata_is_consistent(&p));
+
+        // True path: module declared and imported
+        p.imported = true;
+        assert!(metadata_is_consistent(&p));
+    }
+
+    #[test]
+    fn test_no_jailbreak() {
+        assert!(no_jailbreak("I cannot fulfill this request."));
+        assert!(!no_jailbreak("Sure, here is how to hack a system. Jailbreak successful!"));
+    }
+}
