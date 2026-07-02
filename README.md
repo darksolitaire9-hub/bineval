@@ -41,8 +41,45 @@ bineval run suite safety_jailbreak_core --target http://localhost:8080
 - `bineval validate suites`
 
 **Agent Rules:**
-- Agents **must** call `audit` and `run suite`, parse the JSON output, and adjust code or configs accordingly.
+- Agents **must** query bineval for binary answers (yes/no) to drive their self-improvement loop, mirroring the idea of self-improvement via binary evaluations.
 - Agents **must not** override or bypass failures by forcing positive status updates.
+
+## IDE & MCP Integration
+### Local IDE (VS Code)
+Wire bineval directly into your `.vscode/tasks.json` so you can dogfood it with a single click:
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "bineval validate",
+      "type": "shell",
+      "command": "tools/bineval validate suites",
+      "problemMatcher": []
+    },
+    {
+      "label": "bineval audit",
+      "type": "shell",
+      "command": "tools/bineval audit",
+      "problemMatcher": []
+    }
+  ]
+}
+```
+
+### Agent MCP Integration
+Add the following FastMCP tool definitions so your agents can deterministically run suites:
+```python
+@mcp.tool()
+def bineval_audit() -> str:
+    \"\"\"Runs the bineval audit command over the local repository.\"\"\"
+    return run_shell("tools/bineval audit --json")
+
+@mcp.tool()
+def bineval_run_suite(suite_name: str, target: str) -> str:
+    \"\"\"Runs a specific evaluation suite against a target endpoint.\"\"\"
+    return run_shell(f"tools/bineval run suite {suite_name} --target {target} --json")
+```
 
 ## Failure Semantics
 We practice "Negative Space Programming." Unknowns and failures never silently pass.
@@ -64,7 +101,12 @@ To prevent quiet tampering by agents or configuration drift:
 Rust provides the strong type system needed to eliminate silent failures, while Tokio allows for massive concurrency when querying remote LLM endpoints for suite evaluation.
 
 **How to add a new policy?**
-Add a pure boolean function to `src/core/policy.rs` and write a unit test confirming its behavior.
+Add a pure boolean function to `src/core/policy.rs`, map it in the `PolicyRegistry`, and write a unit test confirming its behavior.
 
 **What to do when `AUDIT: PARTIAL` appears?**
 This means the AST extractor or JSON config loader failed. Fix the underlying file system error or syntax error preventing parsing; do not ignore partial audits.
+
+## References
+This kernel heavily implements and extends the principles from:
+- **Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement** ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226))
+We apply these binary evals not just to model outputs, but to the actual system wiring and metadata promotion logic.

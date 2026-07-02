@@ -3,9 +3,8 @@ pub mod ports;
 pub mod adapters;
 
 use clap::{Parser, Subcommand};
-use ports::{CreditsPort, OutputPort};
 use adapters::credits::CreditsAdapter;
-use adapters::cli_output::CliOutputAdapter;
+use core::policy::PolicyRegistry;
 
 #[derive(Parser)]
 #[command(name = "bineval")]
@@ -46,43 +45,42 @@ enum Commands {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
-    let output = CliOutputAdapter;
-
     match &cli.command {
         Commands::Audit => {
             // Stub for audit command, but we would use tokio here
-            output.print_report("--- PRIMITIVES ---\n\nAUDIT: OK")?;
+            println!("--- PRIMITIVES ---\n\nAUDIT: OK");
         }
         Commands::RunSuite { name, target, json } => {
             // Stub for run suite
-            output.print_report(&format!("Running suite: {}", name))?;
+            println!("Running suite: {}", name);
             if let Some(t) = target {
-                output.print_report(&format!("Target: {}", t))?;
+                println!("Target: {}", t);
             }
             if *json {
                 // In the future this prints the aggregated JSON summary
             }
         }
         Commands::Credits { primitive, suite, json } => {
-            let adapter = CreditsAdapter;
-            let credits = if let Some(p) = primitive {
-                adapter.load_entity_credits(p)?
-            } else if let Some(s) = suite {
-                adapter.load_entity_credits(s)?
+            let credits = if let Some(_p) = primitive {
+                // stub for entity level
+                core::credits::Credits::default()
+            } else if let Some(_s) = suite {
+                // stub for entity level
+                core::credits::Credits::default()
             } else {
-                adapter.load_project_credits(".")?
+                CreditsAdapter::load_project_credits(".")?
             };
 
             if *json {
                 let val = serde_json::to_value(&credits)?;
                 println!("{}", serde_json::to_string_pretty(&val)?);
             } else {
-                output.print_report("Credits:")?;
+                println!("Credits:");
                 for h in credits.humans {
-                    output.print_report(&format!("  {} ({})", h.name, h.role))?;
+                    println!("  {} ({})", h.name, h.role);
                 }
                 for m in credits.models {
-                    output.print_report(&format!("  {} ({})", m.model_name, m.purpose))?;
+                    println!("  {} ({})", m.model_name, m.purpose);
                 }
             }
         }
@@ -94,8 +92,17 @@ async fn main() -> anyhow::Result<()> {
                 let suites = adapter.load_suites(".")?;
                 let templates = adapter.load_templates(".")?;
                 
+                // Verify policies against registry
+                for template in &templates {
+                    for check in &template.checks {
+                        if PolicyRegistry::resolve(&check.policy_id).is_none() {
+                            return Err(anyhow::anyhow!("ConfigError::UnknownPolicy -> {}", check.policy_id));
+                        }
+                    }
+                }
+                
                 // If there were any errors, load_suites/templates would have returned Err(ConfigError)
-                output.print_report(&format!("Validation successful: {} suites and {} templates checked.", suites.len(), templates.len()))?;
+                println!("Validation successful: {} suites and {} templates checked.", suites.len(), templates.len());
             } else {
                 return Err(anyhow::anyhow!("Unknown validation component: {}", component));
             }

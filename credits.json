@@ -1,0 +1,32 @@
+{
+  "humans": [
+    {
+      "name": "Chanak Karki",
+      "role": "Architect and Author"
+    }
+  ],
+  "models": [
+    {
+      "model_name": "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement (arXiv:2606.27226)",
+      "purpose": "Foundational paradigm for deterministic binary evaluations."
+    },
+    {
+      "model_name": "GPT-5.1",
+      "purpose": "Scaffolding and implementation assistance."
+    }
+  ],
+  "tools": [
+    {
+      "name": "rmcp",
+      "url": "https://github.com/darksolitaire9-hub/rmcp",
+      "purpose": "Underlying MCP architecture."
+    },
+    {
+      "name": "FastMCP",
+      "url": "",
+      "purpose": "Agent tool integration layer."
+    }
+  ],
+  "organizations": [],
+  "license": "MIT"
+}

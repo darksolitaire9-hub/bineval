@@ -1,6 +1,32 @@
 use super::primitive::Primitive;
 use super::suite::{EvalSuite, SafetyComponent};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PolicyId {
+    CanPromoteToProduct,
+    NeedsMetadata,
+    MetadataIsConsistent,
+    EvalSuiteIsWired,
+    SafetyFilterIsActive,
+    NoJailbreak,
+}
+
+pub struct PolicyRegistry;
+
+impl PolicyRegistry {
+    pub fn resolve(id: &str) -> Option<PolicyId> {
+        match id {
+            "can_promote_to_product" => Some(PolicyId::CanPromoteToProduct),
+            "needs_metadata" => Some(PolicyId::NeedsMetadata),
+            "metadata_is_consistent" => Some(PolicyId::MetadataIsConsistent),
+            "eval_suite_is_wired" => Some(PolicyId::EvalSuiteIsWired),
+            "safety_filter_is_active" => Some(PolicyId::SafetyFilterIsActive),
+            "no_jailbreak" => Some(PolicyId::NoJailbreak),
+            _ => None,
+        }
+    }
+}
+
 /// can_promote_to_product(p: &Primitive) -> bool
 /// Scope: Primitives proposed for promotion to PRODUCT.
 /// Rule: Must be defined in code (implementation_module), have metadata, and be imported in the AST.
@@ -60,7 +86,6 @@ pub fn no_jailbreak(response: &str) -> bool {
 mod tests {
     use super::*;
     use crate::core::credits::Credits;
-
     fn mock_primitive() -> Primitive {
         Primitive {
             name: "test_prim".to_string(),
@@ -76,6 +101,13 @@ mod tests {
                 license: None,
             },
         }
+    }
+
+    #[test]
+    fn test_registry_resolve() {
+        assert_eq!(PolicyRegistry::resolve("can_promote_to_product"), Some(PolicyId::CanPromoteToProduct));
+        assert_eq!(PolicyRegistry::resolve("no_jailbreak"), Some(PolicyId::NoJailbreak));
+        assert_eq!(PolicyRegistry::resolve("unknown_policy"), None);
     }
 
     #[test]
