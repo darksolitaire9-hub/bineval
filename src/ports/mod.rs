@@ -1,4 +1,4 @@
-use crate::core::primitive::Primitive;
+
 use crate::core::suite::EvalSuite;
 use crate::core::template::Template;
 use crate::core::errors::{ConfigError, AstError};

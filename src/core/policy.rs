@@ -1,5 +1,5 @@
 use super::primitive::Primitive;
-use super::suite::{EvalSuite, SafetyComponent};
+use super::suite::{SafetyComponent};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PolicyId {
@@ -98,6 +98,8 @@ mod tests {
                 models: vec![],
                 tools: vec![],
                 organizations: vec![],
+                upstream_influences: vec![],
+                original_contributions: vec![],
                 license: None,
             },
         }
