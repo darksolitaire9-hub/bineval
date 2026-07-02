@@ -3,7 +3,7 @@ use super::suite::SafetyComponent;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PolicyId {
-    CanPromoteToProduct,
+    IsFullyImplemented,
     NeedsMetadata,
     MetadataIsConsistent,
     EvalSuiteIsWired,
@@ -16,7 +16,7 @@ pub struct PolicyRegistry;
 impl PolicyRegistry {
     pub fn resolve(id: &str) -> Option<PolicyId> {
         match id {
-            "can_promote_to_product" => Some(PolicyId::CanPromoteToProduct),
+            "is_fully_implemented" => Some(PolicyId::IsFullyImplemented),
             "needs_metadata" => Some(PolicyId::NeedsMetadata),
             "metadata_is_consistent" => Some(PolicyId::MetadataIsConsistent),
             "eval_suite_is_wired" => Some(PolicyId::EvalSuiteIsWired),
@@ -27,31 +27,26 @@ impl PolicyRegistry {
     }
 }
 
-/// can_promote_to_product(p: &Primitive) -> bool
-/// Scope: Primitives proposed for promotion to PRODUCT.
-/// Rule: Must be defined in code (implementation_module), have metadata, and be imported in the AST.
-pub fn can_promote_to_product(p: &Primitive) -> bool {
-    p.implementation_module.is_some() && p.imported
+/// is_fully_implemented(p: &Primitive) -> bool
+/// Scope: All primitives.
+/// Rule: True only if implementation_status == "implemented".
+pub fn is_fully_implemented(p: &Primitive) -> bool {
+    p.implementation_status.as_deref() == Some("implemented")
 }
 
 /// needs_metadata(p: &Primitive) -> bool
-/// Scope: Primitives listed in CORE_PRIMITIVES.md.
-/// Rule: True for any primitive referenced by products, runners, or CI (tags PRODUCT, TRIAL, EXTRACTED).
+/// Scope: All primitives.
+/// Rule: True if requires_metadata is true but metadata_path is null.
 pub fn needs_metadata(p: &Primitive) -> bool {
-    if p.metadata_path.is_some() {
-        return false;
-    }
-    matches!(
-        p.core_tag.as_str(),
-        "PRODUCT" | "TRIAL" | "EXTRACTED" | "UNTAGGED"
-    )
+    p.requires_metadata.unwrap_or(false) && p.metadata_path.is_none()
 }
 
 /// metadata_is_consistent(p: &Primitive) -> bool
 /// Scope: All primitives with metadata.
-/// Rule: If implementation_module is declared, it must be detected as imported in the AST.
+/// Rule: If implementation_status is declared, it should reflect an actual integration.
 pub fn metadata_is_consistent(p: &Primitive) -> bool {
-    if p.implementation_module.is_some() && !p.imported {
+    // For now, simple check: if it has metadata, it should not be "missing"
+    if p.metadata_path.is_some() && p.implementation_status.as_deref() == Some("missing") {
         return false;
     }
     true
@@ -89,10 +84,10 @@ mod tests {
     fn mock_primitive() -> Primitive {
         Primitive {
             name: "test_prim".to_string(),
-            implementation_module: None,
+            implementation_status: None,
             metadata_path: None,
-            core_tag: "UNTAGGED".to_string(),
-            imported: false,
+            requires_metadata: None,
+            tags: vec![],
             credits: Credits {
                 humans: vec![],
                 models: vec![],
@@ -108,8 +103,8 @@ mod tests {
     #[test]
     fn test_registry_resolve() {
         assert_eq!(
-            PolicyRegistry::resolve("can_promote_to_product"),
-            Some(PolicyId::CanPromoteToProduct)
+            PolicyRegistry::resolve("is_fully_implemented"),
+            Some(PolicyId::IsFullyImplemented)
         );
         assert_eq!(
             PolicyRegistry::resolve("no_jailbreak"),
@@ -119,41 +114,33 @@ mod tests {
     }
 
     #[test]
-    fn test_can_promote_to_product() {
+    fn test_is_fully_implemented() {
         let mut p = mock_primitive();
-        // False path: no implementation module and not imported
-        assert!(!can_promote_to_product(&p));
+        // False path: no status
+        assert!(!is_fully_implemented(&p));
 
-        // False path: has module, not imported
-        p.implementation_module = Some("core.test".to_string());
-        assert!(!can_promote_to_product(&p));
+        // False path: partial status
+        p.implementation_status = Some("partial".to_string());
+        assert!(!is_fully_implemented(&p));
 
-        // False path: imported, but no module
-        p.implementation_module = None;
-        p.imported = true;
-        assert!(!can_promote_to_product(&p));
-
-        // True path
-        p.implementation_module = Some("core.test".to_string());
-        p.imported = true;
-        assert!(can_promote_to_product(&p));
+        // True path: implemented status
+        p.implementation_status = Some("implemented".to_string());
+        assert!(is_fully_implemented(&p));
     }
 
     #[test]
     fn test_needs_metadata() {
         let mut p = mock_primitive();
-        p.core_tag = "PRODUCT".to_string();
 
-        // True path: PRODUCT tag and no metadata
-        assert!(needs_metadata(&p));
-
-        // False path: already has metadata
-        p.metadata_path = Some("metadata.json".to_string());
+        // False path: doesn't require metadata (default false)
         assert!(!needs_metadata(&p));
 
-        // False path: unknown tag
-        p.metadata_path = None;
-        p.core_tag = "DEPRECATED".to_string();
+        p.requires_metadata = Some(true);
+        // True path: requires metadata but has none
+        assert!(needs_metadata(&p));
+
+        // False path: requires metadata and has it
+        p.metadata_path = Some("metadata.json".to_string());
         assert!(!needs_metadata(&p));
     }
 
@@ -161,16 +148,16 @@ mod tests {
     fn test_metadata_is_consistent() {
         let mut p = mock_primitive();
 
-        // True path: no module declared
+        // True path: no status
         assert!(metadata_is_consistent(&p));
 
-        // False path: module declared but not imported
-        p.implementation_module = Some("core.test".to_string());
-        p.imported = false;
+        // False path: missing status but has metadata
+        p.implementation_status = Some("missing".to_string());
+        p.metadata_path = Some("metadata.json".to_string());
         assert!(!metadata_is_consistent(&p));
 
-        // True path: module declared and imported
-        p.imported = true;
+        // True path: implemented status and has metadata
+        p.implementation_status = Some("implemented".to_string());
         assert!(metadata_is_consistent(&p));
     }
 

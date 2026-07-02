@@ -10,6 +10,7 @@ All policies must be strictly boolean (true/false) evaluations.
 1. Add your pure Rust boolean function to `src/core/policy.rs`.
 2. Register the policy in the `PolicyRegistry` inside the same file.
 3. Your policy should not have side effects. It should only evaluate data returned by adapters.
+4. **CRITICAL**: No domain-specific logic is allowed in `bineval` core. You must not introduce or rely on domain vocabulary (e.g. `PRODUCT`, `TRIAL`, `experiment`, `feature flag`). All rules belong in external suite configurations, and your policy must remain generic.
 
 ## 2. Writing Deterministic Tests
 

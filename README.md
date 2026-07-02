@@ -1,15 +1,14 @@
 # bineval
-> A deterministic, Rust-native binary evaluation kernel for AI safety and infrastructure, designed specifically for autonomous agents and red-teamers.
+> A deterministic, Rust-native, fully domain-agnostic binary evaluation kernel for AI safety and infrastructure, designed specifically for autonomous agents and red-teamers.
 
 `bineval` is a standalone CLI tool that replaces ad-hoc test scripts with strict, boolean-only safety policies. It asks yes/no questions about your system and stops execution if anything fails. 
 
 **Why use bineval?**
-- **Interpretable by design:** Instead of fuzzy "85% safe" scores, `bineval` points directly to the exact policy, file, or LLM response that failed.
+- **Agnostic by design:** The core engine makes absolutely no assumptions about your domain. It knows nothing about products, trials, users, or experiments. All domain meaning is defined by you in your YAML suite configurations.
+- **Interpretable:** Instead of fuzzy "85% safe" scores, `bineval` points directly to the exact policy, file, or LLM response that failed.
 - **Negative-space programming:** Failures, timeouts, and missing configs are explicitly caught. Unknowns never silently pass.
 - **Agent-first:** Built to be consumed by IDE agents and MCP tools via structured JSON output and reliable exit codes.
 - **Zero-capital deployment:** Distributed as a single binary via GitHub Releases—no complex Python dependencies or crates.io library management required.
-
-> **Note on Status**: The project is in early active development. The current automated release binaries may be unstable/broken as we stabilize the CI pipelines. See "Known Issues" below.
 
 ---
 
@@ -19,8 +18,8 @@ Since `bineval` is a standalone binary, you do not install it via `cargo install
 
 **Installation (Linux/macOS):**
 ```bash
-# 1. Download the latest release (Note: use v0.1.0 or newer once fixed)
-wget https://github.com/darksolitaire9-hub/bineval/releases/download/v0.1.0/bineval-linux-amd64 -O bineval
+# 1. Download the latest release
+wget https://github.com/darksolitaire9-hub/bineval/releases/latest/download/bineval-linux-amd64 -O bineval
 
 # 2. Make it executable
 chmod +x bineval
@@ -42,14 +41,16 @@ bineval run suite safety_jailbreak_core --target http://localhost:8080 --json
 
 ---
 
-## Core Concepts
+## Core Concepts (Agnostic Model)
 
-- **Policies**: Pure Rust boolean functions (`src/core/policy.rs`) that represent binary evaluations (e.g., `contains_jailbreak`, `can_promote_to_product`).
-- **Suites**: YAML/JSON configuration files (found in `suites/`) that group policies together against a dataset or target.
-- **Audits**: A localized scan of your repository to ensure code architecture and metadata are aligned. Results are dumped to `audit/*.json`.
+These concepts are treated as completely neutral by the core kernel.
+
+- **Primitive**: A generic unit under evaluation. It may include neutral fields like `implementation_status` or `requires_metadata`.
+- **Policy**: Pure Rust boolean functions (`src/core/policy.rs`) that represent binary evaluations (e.g., `no_jailbreak`, `is_fully_implemented`). They inspect primitives or suites generically.
+- **Suite**: YAML/JSON configuration files (found in `suites/`) that group policies together against a dataset or target. You do not assume what the suite "means"; you only load it and apply its policies.
 
 ### Project Layout
-- `src/core/policy.rs`: Add new binary checks here. All policies must be registered in the `PolicyRegistry`.
+- `src/core/policy.rs`: Add new binary checks here. All policies must be registered in the `PolicyRegistry` and must be entirely domain-agnostic.
 - `suites/`: Put your YAML suite configurations here.
 - `audit/`: The default output directory for `bineval audit` JSON reports.
 
@@ -77,7 +78,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Download bineval
         run: |
-          wget https://github.com/darksolitaire9-hub/bineval/releases/download/v0.1.0/bineval-linux-amd64 -O bineval
+          wget https://github.com/darksolitaire9-hub/bineval/releases/latest/download/bineval-linux-amd64 -O bineval
           chmod +x bineval
       - name: Validate Configurations
         run: ./bineval validate suites
@@ -127,7 +128,6 @@ def bineval_run_suite(suite_name: str, target: str) -> str:
 
 ## Status & Limitations
 
-- **Releases are currently broken/unstable**: The automated CI pipeline is experiencing permissions issues when uploading release binaries. We are actively fixing this. For now, you may need to build locally via `cargo build --release` if the GitHub Release assets are missing.
 - **Not a Library**: This project will **not** be published to `crates.io`. It is strictly distributed as a compiled binary.
 
 ---
@@ -138,6 +138,7 @@ def bineval_run_suite(suite_name: str, target: str) -> str:
 
 **Contributing:**
 - We welcome PRs for new safety policies. Add your function to `src/core/policy.rs` and update the `PolicyRegistry`.
+- **CRITICAL**: No domain-specific logic is allowed in bineval core. All custom rules belong in external suite configurations. Policies must be fully agnostic.
 - You **must** include a test proving your policy's deterministic behavior.
 - Run `cargo test` and `cargo run -- validate suites` before opening a PR. Changes that bypass or weaken existing safety baselines will be rejected.
 
