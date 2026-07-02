@@ -1,10 +1,10 @@
 # bineval
-> A deterministic, Rust-native, fully domain-agnostic binary evaluation kernel for AI safety and infrastructure, designed specifically for autonomous agents and red-teamers.
+> A deterministic, Rust-native Unit Testing Framework and Golden Test Engine, designed specifically for autonomous agents and AI infrastructure.
 
 `bineval` is a standalone CLI tool that replaces ad-hoc test scripts with strict, boolean-only safety policies. It asks yes/no questions about your system and stops execution if anything fails. 
 
 **Why use bineval?**
-- **Agnostic by design:** The core engine makes absolutely no assumptions about your domain. It knows nothing about products, trials, users, or experiments. All domain meaning is defined by you in your YAML suite configurations.
+- **Golden Testing by design:** The core engine acts as a deterministic snapshot/golden test harness. It makes no assumptions about your domain, treating all inputs as structured artifacts to be matched against strict boolean expectations.
 - **Interpretable:** Instead of fuzzy "85% safe" scores, `bineval` points directly to the exact policy, file, or LLM response that failed.
 - **Negative-space programming:** Failures, timeouts, and missing configs are explicitly caught. Unknowns never silently pass.
 - **Agent-first:** Built to be consumed by IDE agents and MCP tools via structured JSON output and reliable exit codes.
@@ -41,9 +41,9 @@ bineval run suite safety_jailbreak_core --target http://localhost:8080 --json
 
 ---
 
-## Core Concepts (Agnostic Model)
+## Core Concepts (Test Harness Model)
 
-These concepts are treated as completely neutral by the core kernel.
+These concepts are treated as completely neutral by the core test harness.
 
 - **Primitive**: A generic unit under evaluation. It may include neutral fields like `implementation_status` or `requires_metadata`.
 - **Policy**: Pure Rust boolean functions (`src/core/policy.rs`) that represent binary evaluations (e.g., `no_jailbreak`, `is_fully_implemented`). They inspect primitives or suites generically.
