@@ -2,6 +2,7 @@ use crate::core::primitive::Primitive;
 use crate::core::suite::EvalSuite;
 use crate::core::template::Template;
 use crate::core::credits::Credits;
+use crate::core::errors::{ConfigError, AstError};
 use serde_json::Value;
 
 pub trait RepoPort {
@@ -10,12 +11,13 @@ pub trait RepoPort {
 }
 
 pub trait AstPort {
-    fn parse_imports(&self, repo_path: &str) -> anyhow::Result<Vec<String>>;
+    // Note: Rust >= 1.75 allows async fn in traits
+    fn parse_imports(&self, repo_path: &str) -> impl std::future::Future<Output = Result<Vec<String>, AstError>> + Send;
 }
 
 pub trait ConfigPort {
-    fn load_templates(&self, repo_path: &str) -> anyhow::Result<Vec<Template>>;
-    fn load_suites(&self, repo_path: &str) -> anyhow::Result<Vec<EvalSuite>>;
+    fn load_templates(&self, repo_path: &str) -> Result<Vec<Template>, ConfigError>;
+    fn load_suites(&self, repo_path: &str) -> Result<Vec<EvalSuite>, ConfigError>;
 }
 
 pub trait CreditsPort {

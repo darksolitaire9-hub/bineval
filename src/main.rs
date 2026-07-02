@@ -22,6 +22,10 @@ enum Commands {
     /// Run an evaluation suite
     RunSuite {
         name: String,
+        #[arg(long)]
+        target: Option<String>,
+        #[arg(long)]
+        json: bool,
     },
     /// Print credits for the project or specific entity
     Credits {
@@ -34,18 +38,25 @@ enum Commands {
     },
 }
 
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     let output = CliOutputAdapter;
 
     match &cli.command {
         Commands::Audit => {
-            // Stub for audit command
+            // Stub for audit command, but we would use tokio here
             output.print_report("--- PRIMITIVES ---\n\nAUDIT: OK")?;
         }
-        Commands::RunSuite { name } => {
+        Commands::RunSuite { name, target, json } => {
             // Stub for run suite
             output.print_report(&format!("Running suite: {}", name))?;
+            if let Some(t) = target {
+                output.print_report(&format!("Target: {}", t))?;
+            }
+            if *json {
+                // In the future this prints the aggregated JSON summary
+            }
         }
         Commands::Credits { primitive, suite, json } => {
             let adapter = CreditsAdapter;
