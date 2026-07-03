@@ -1,14 +1,7 @@
-use super::credits::Credits;
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct Primitive {
-    pub name: String,
-    pub implementation_status: Option<String>,
-    pub metadata_path: Option<String>,
-    pub requires_metadata: Option<bool>,
-    #[serde(default)]
-    pub tags: Vec<String>,
-    #[serde(default)]
-    pub credits: Credits,
+    pub id: String,
+    pub data: Value,
 }

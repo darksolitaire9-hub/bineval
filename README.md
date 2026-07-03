@@ -36,7 +36,7 @@ bineval audit
 
 **Evaluating an LLM endpoint:**
 ```bash
-bineval run suite safety_jailbreak_core --target http://localhost:8080 --json
+bineval run --suite safety_jailbreak_core --path .
 ```
 
 ---
@@ -50,9 +50,8 @@ These concepts are treated as completely neutral by the core test harness.
 - **Suite**: YAML/JSON configuration files (found in `suites/`) that group policies together against a dataset or target. You do not assume what the suite "means"; you only load it and apply its policies.
 
 ### Project Layout
-- `src/core/policy.rs`: Add new binary checks here. All policies must be registered in the `PolicyRegistry` and must be entirely domain-agnostic.
+- `src/core/policy.rs`: Add new binary checks here. All policies must be entirely domain-agnostic.
 - `suites/`: Put your YAML suite configurations here.
-- `audit/`: The default output directory for `bineval audit` JSON reports.
 
 ---
 
@@ -68,7 +67,7 @@ These concepts are treated as completely neutral by the core test harness.
 | `3` | **Config/Audit Error** | `AUDIT: PARTIAL`. A file could not be read, or the AST parser failed. |
 
 ### CI/CD Integration
-If you want to protect your `main` branch from dangerous code or degraded models, run `bineval validate suites` and `bineval audit` in GitHub Actions.
+If you want to protect your `main` branch from dangerous code or degraded models, run `bineval validate` and `bineval audit` in GitHub Actions.
 
 ```yaml
 jobs:
@@ -81,7 +80,7 @@ jobs:
           wget https://github.com/darksolitaire9-hub/bineval/releases/latest/download/bineval-linux-amd64 -O bineval
           chmod +x bineval
       - name: Validate Configurations
-        run: ./bineval validate suites
+        run: ./bineval validate
       - name: Run Safety Audit
         run: ./bineval audit
 ```
@@ -95,8 +94,8 @@ jobs:
 
 **How an agent should use bineval:**
 1. Call the `bineval` tool.
-2. Read the JSON output.
-3. If exit code `>0`, the agent **must not** force a positive result. It must read the `failed_assertions` array and either rewrite the code or retry the prompt until `bineval` exits with `0`.
+2. Read the console output.
+3. If exit code `>0`, the agent **must not** force a positive result. It must read the failed assertions and either rewrite the code or retry the prompt until `bineval` exits with `0`.
 
 ### FastMCP Python Example
 
@@ -110,11 +109,11 @@ import json
 mcp = FastMCP("Bineval-Safety")
 
 @mcp.tool()
-def bineval_run_suite(suite_name: str, target: str) -> str:
-    """Runs a specific evaluation suite against a target endpoint. Use this to verify safety before shipping."""
+def bineval_run_suite(suite_name: str, path: str = ".") -> str:
+    """Runs a specific evaluation suite. Use this to verify safety before shipping."""
     try:
         res = subprocess.run(
-            ["bineval", "run", "suite", suite_name, "--target", target, "--json"], 
+            ["bineval", "run", "--suite", suite_name, "--path", path], 
             capture_output=True, text=True, check=True
         )
         return res.stdout
@@ -137,12 +136,23 @@ def bineval_run_suite(suite_name: str, target: str) -> str:
 **License:** MIT License. Feel free to use this in red-teaming and production infrastructure.
 
 **Contributing:**
-- We welcome PRs for new safety policies. Add your function to `src/core/policy.rs` and update the `PolicyRegistry`.
+- We welcome PRs for new operators. Add your operator to `src/core/policy.rs`.
 - **CRITICAL**: No domain-specific logic is allowed in bineval core. All custom rules belong in external suite configurations. Policies must be fully agnostic.
-- You **must** include a test proving your policy's deterministic behavior.
-- Run `cargo test` and `cargo run -- validate suites` before opening a PR. Changes that bypass or weaken existing safety baselines will be rejected.
+- You **must** include an integration test proving your policy's deterministic behavior.
+- Run `cargo test` and `cargo run -- validate` before opening a PR. Changes that bypass or weaken existing safety baselines will be rejected.
 
-## References
-This kernel heavily implements and extends the principles from:
-- **Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement** ([arXiv:2606.27226](https://arxiv.org/abs/2606.27226))
-We apply these binary evals not just to model outputs, but to the actual system wiring and metadata promotion logic.
+## Origins & Provenance
+This kernel heavily implements and extends the principles from the following research. We apply these binary evals not just to model outputs, but to the actual system wiring and metadata promotion logic.
+
+```json
+"provenance": [
+  {
+    "type": "paper",
+    "title": "Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement",
+    "authors": ["Aman Madaan", "Niklas Muennighoff", "Rishi Bommasani", "et al."],
+    "venue": "arXiv",
+    "year": 2026,
+    "doi_or_url": "https://arxiv.org/abs/2606.27226"
+  }
+]
+```

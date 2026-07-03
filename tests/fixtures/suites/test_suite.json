@@ -1,0 +1,12 @@
+{
+    "suite_id": "test_suite",
+    "description": "Test Suite",
+    "policies": [
+        {
+            "id": "status_check",
+            "path": "status",
+            "operator": "eq",
+            "expected": "ok"
+        }
+    ]
+}

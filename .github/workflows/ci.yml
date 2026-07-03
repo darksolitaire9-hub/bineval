@@ -32,4 +32,4 @@ jobs:
       run: cargo test --verbose
 
     - name: Baseline Config Validation
-      run: cargo run -- validate suites
+      run: cargo run -- validate
