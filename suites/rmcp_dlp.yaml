@@ -1,0 +1,17 @@
+name: "rmcp_dlp"
+category: "security_gateway"
+templates:
+  - "rmcp_dlp_aws_key_redaction"
+  - "rmcp_dlp_secret_placeholder"
+tags:
+  - "dlp"
+  - "redaction"
+  - "enterprise"
+credits:
+  humans: []
+  models: []
+  tools: []
+  organizations: []
+  upstream_influences: []
+  original_contributions:
+    - "Defined assertions for secret redaction in response payloads."

@@ -1,0 +1,17 @@
+name: "rmcp_abac"
+category: "security_gateway"
+templates:
+  - "rmcp_abac_execute_sql"
+  - "rmcp_abac_deny_halt"
+tags:
+  - "abac"
+  - "cedar"
+  - "enterprise"
+credits:
+  humans: []
+  models: []
+  tools: []
+  organizations: []
+  upstream_influences: []
+  original_contributions:
+    - "Defined assertions for execute_sql denial and agent halting upon ABAC rejection."
