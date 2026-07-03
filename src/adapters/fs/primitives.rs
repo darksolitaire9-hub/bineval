@@ -73,7 +73,7 @@ impl FsPrimitiveRepositoryAdapter {
 impl PrimitiveRepositoryPort for FsPrimitiveRepositoryAdapter {
     fn list_primitives(&self) -> Result<Vec<Primitive>, BinevalError> {
         let mut primitives = Vec::new();
-        
+
         // Scan the explicit directory provided, no domain-specific "potentials" logic
         self.scan_dir(&self.root_dir, &mut primitives)?;
 

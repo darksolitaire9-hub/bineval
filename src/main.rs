@@ -71,7 +71,11 @@ fn main() {
                 }
             }
         }
-        Commands::Run { suite, path, targets } => {
+        Commands::Run {
+            suite,
+            path,
+            targets,
+        } => {
             let primitives_repo = FsPrimitiveRepositoryAdapter::new(targets);
             let suites_repo = FsSuiteRepositoryAdapter::new(path);
             let use_case = RunSuiteUseCase {
