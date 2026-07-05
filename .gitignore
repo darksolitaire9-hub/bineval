@@ -1,1 +1,11 @@
-/target
+# Build artifacts
+/target/
+
+# AI Agent instructions & scratch plans
+.agents/
+
+# Lock files and logs
+.*.log
+*.log
+*.lock
+!Cargo.lock

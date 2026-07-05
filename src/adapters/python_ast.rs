@@ -6,7 +6,11 @@ pub struct PythonAstAdapter;
 
 impl AstPort for PythonAstAdapter {
     async fn parse_imports(&self, repo_path: &str) -> Result<Vec<String>, AstError> {
-        let script_path = ".bineval_ast_extractor.py";
+        let script_path = if std::path::Path::new("scripts/ast_extractor.py").exists() {
+            "scripts/ast_extractor.py"
+        } else {
+            ".bineval_ast_extractor.py"
+        };
 
         let output = Command::new("uv")
             .arg("run")
