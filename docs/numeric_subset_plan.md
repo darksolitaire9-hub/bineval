@@ -1,6 +1,6 @@
 # bineval Implementation Plan: Numeric Subset Operator (`tabular_data_referencing_critic`)
 
-**Status**: PROPOSED  
+**Status**: IMPLEMENTED (v0.3.0 Release)  
 **Target Primitive**: `tabular_data_referencing_critic` (from `hope/potentials/transfers/tabular_data_referencing_critic`)  
 **CS Isomorphism**: `critic_rejection_sampling` / numeric claim verification  
 

@@ -46,8 +46,9 @@ bineval run --suite safety_jailbreak_core --path .
 These concepts are treated as completely neutral by the core test harness.
 
 - **Primitive**: A generic unit under evaluation. It may include neutral fields like `implementation_status` or `requires_metadata`.
-- **Policy**: Pure Rust boolean functions (`src/core/policy.rs`) that represent binary evaluations (e.g., `no_jailbreak`, `is_fully_implemented`). They inspect primitives or suites generically.
+- **Policy**: Pure Rust boolean functions (`src/core/policy.rs`) that represent binary evaluations (e.g., `no_jailbreak`, `is_fully_implemented`, `numeric_subset`). They inspect primitives or suites generically.
 - **Suite**: YAML/JSON configuration files (found in `suites/`) that group policies together against a dataset or target. You do not assume what the suite "means"; you only load it and apply its policies.
+- **Guides**: For comprehensive instructions on suite authoring, quantitative claim verification (`numeric_subset`), and CI/CD/MCP agent integration, see [`docs/GUIDE.md`](file:///f:/inputs/jun/bineval/docs/GUIDE.md).
 
 ### Project Layout
 - `src/core/policy.rs`: Add new binary checks here. All policies must be entirely domain-agnostic.
@@ -153,6 +154,14 @@ This kernel heavily implements and extends the principles from the following res
     "venue": "arXiv",
     "year": 2026,
     "doi_or_url": "https://arxiv.org/abs/2606.27226"
+  },
+  {
+    "type": "paper",
+    "title": "Tabular Data Referencing Critic for Quantitative Claim Verification",
+    "authors": ["ACL 2026 Oral"],
+    "venue": "arXiv / ACL 2026 Main Conference",
+    "year": 2026,
+    "doi_or_url": "https://arxiv.org/abs/2606.32029"
   }
 ]
 ```
