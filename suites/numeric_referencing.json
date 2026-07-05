@@ -1,0 +1,27 @@
+{
+  "suite_id": "numeric_referencing",
+  "description": "Detects hallucinated numeric claims by checking that all numbers in an agent output are a subset of the reference data table.",
+  "policies": [
+    {
+      "id": "valid_subset_basic",
+      "description": "Verifies that target_output numeric claims are supported by reference expected table.",
+      "path": "target_output",
+      "operator": "numeric_subset",
+      "expected": [120, 45.5, 2026]
+    },
+    {
+      "id": "array_reference_pass",
+      "description": "Verifies array input numeric subset.",
+      "path": "observed_values",
+      "operator": "numeric_subset",
+      "expected": [10, 20, 30]
+    },
+    {
+      "id": "float_epsilon_tolerance",
+      "description": "Verifies float epsilon tolerance.",
+      "path": "pi_approx",
+      "operator": "numeric_subset",
+      "expected": [3.14159265]
+    }
+  ]
+}
