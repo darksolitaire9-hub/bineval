@@ -2,13 +2,17 @@
 
 All notable changes to the `bineval` deterministic golden test engine will be documented in this file.
 
+## [v0.3.1] - 2026-07-05
+### Changed
+- **AST Extractor Resolution**: Relocated root dot-prefixed Python helper script `.bineval_ast_extractor.py` to `scripts/ast_extractor.py`. Updated `PythonAstAdapter` (`src/adapters/python_ast.rs`) to resolve `scripts/ast_extractor.py` dynamically with backward-compatible root fallback.
+### Fixed
+- **Repository Hygiene**: Purged historical scratch plan `docs/numeric_subset_plan.md` from git tracking and established comprehensive `.gitignore` rules for runtime logs, locks, and `.agents/`.
+
 ## [v0.3.0] - 2026-07-05
 ### Added
 - **Numeric Subset Operator (`numeric_subset`)**: Added quantitative claim verification operator to evaluate whether numbers in target strings/arrays are a subset of expected reference tables without introducing domain logic into core.
 - **Tabular Referencing Suite**: Added `suites/numeric_referencing.json` to verify agent data extraction accuracy against quantitative reference tables.
 - **Comprehensive Documentation**: Added `docs/GUIDE.md` detailing architecture, operator syntax, and agent usage patterns.
-### Fixed
-- **Repository Hygiene**: Removed dot-prefixed root helper scripts (`.bineval_ast_extractor.py` moved to `scripts/ast_extractor.py`), eliminated temporary scratch plans from git tracking, and established standardized `.gitignore` rules.
 
 ## [v0.2.0] - 2026-07-04
 ### Added
