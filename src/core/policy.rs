@@ -230,4 +230,16 @@ mod numeric_subset_tests {
         let val = json!({ "target": "pi is about 3.1415927" });
         assert!(policy.evaluate(&val).is_ok());
     }
+
+    #[test]
+    fn numeric_subset_handles_negative_and_comma_formatted_numbers() {
+        let policy = Policy {
+            path: "target".to_string(),
+            operator: Operator::NumericSubset,
+            expected: Some(json!([-1234.5, 1000000])),
+            ..Default::default()
+        };
+        let val = json!({ "target": "Net loss was -1,234.50 out of 1,000,000 total budget." });
+        assert!(policy.evaluate(&val).is_ok());
+    }
 }

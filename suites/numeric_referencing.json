@@ -22,6 +22,13 @@
       "path": "pi_approx",
       "operator": "numeric_subset",
       "expected": [3.14159265]
+    },
+    {
+      "id": "financial_negative_and_commas",
+      "description": "Verifies negative numbers and comma-formatted large numbers.",
+      "path": "financial_summary",
+      "operator": "numeric_subset",
+      "expected": [-1234.5, 1000000]
     }
   ]
 }
